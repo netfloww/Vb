@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مكتبة المتاح - تحميل وقراءة PDF</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-dark: #0f172a;
+            --text-gray: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #4f46e5, #3b82f6);
+            color: white;
+            padding: 35px 20px 25px 20px;
+            text-align: center;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        header p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 30px;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .ad-space {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #e2e8f0;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            text-align: center;
+            color: var(--text-gray);
+            font-size: 0.85rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 10px;
+            flex-grow: 1;
+            width: 100%;
+        }
+
+        .page-section {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-top: 20px;
+            line-height: 1.8;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        .page-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .page-section p {
+            color: #475569;
+            margin-bottom: 12px;
+        }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-family: inherit;
+        }
+
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .book-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid #f1f5f9;
+        }
+
+        .book-cover {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            background: #e2e8f0;
+            transition: transform 0.2s ease;
+        }
+
+        .book-cover:hover {
+            transform: translateY(-2px);
+        }
+
+        .book-category {
+            font-size: 0.65rem;
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 2px 6px;
+            border-radius: 4px;
+            align-self: flex-start;
+            margin-bottom: 3px;
+            font-weight: bold;
+        }
+
+        .book-title {
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 2px;
+            line-height: 1.2;
+        }
+
+        .book-desc {
+            font-size: 0.7rem;
+            color: var(--text-gray);
+            margin-bottom: 6px;
+            line-height: 1.2;
+        }
+
+        .download-btn, .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 6px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+            transition: background-color 0.2s;
+        }
+
+        .download-btn:hover, .submit-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .download-action-container {
+            margin-top: 2px;
+        }
+
+        .download-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            width: 100%;
+        }
+
+        .cancel-btn {
+            background-color: transparent;
+            color: var(--danger-color);
+            border: 1px dashed var(--danger-color);
+            padding: 4px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            text-align: center;
+        }
+
+        .cancel-btn:hover {
+            background-color: #fef2f2;
+            color: var(--danger-hover);
+            border-color: var(--danger-hover);
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 15px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        footer {
+            background-color: #0f172a;
+            color: #94a3b8;
+            padding: 25px 15px;
+            text-align: center;
+            font-size: 0.85rem;
+            margin-top: 40px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: #f1f5f9;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 onclick="showPage('home')">مكتبة المتاح</h1>
+        <p>اقرأ وحمّل أحدث الكتب وروايات الـ PDF مجاناً</p>
+        
+        <div class="search-box" id="search-container">
+            <input type="text" id="search-input" class="search-input" placeholder="ابحث عن اسم كتاب..." onkeyup="filterBooks()">
+        </div>
+    </header>
+
+    <div class="ad-space">
+        📢 مكان مخصص لإعلان Google AdSense
+    </div>
+
+    <main class="container">
+        <div id="home-page" class="page-section active">
+            <div id="books-container" class="books-grid"></div>
+        </div>
+
+        <div id="about-page" class="page-section">
+            <h2>من نحن</h2>
+            <p>مرحباً بكم في <strong>مكتبة المتاح</strong>، منصتكم الأولى المخصصة لنشر الثقافة وتسهيل الوصول إلى الكتب والقراءة الإلكترونية.</p>
+            <span class="back-btn" onclick="showPage('home')">← العودة للرئيسية</span>
+        </div>
+
+        <div id="privacy-page" class="page-section">
+            <h2>سياسة الخصوصية</h2>
+            <p>في مكتبة المتاح، نولي أهمية كبيرة لخصوصية زوارنا ومستخدمينا.</p>
+            <span class="back-btn" onclick="showPage('home')">← العودة للرئيسية</span>
+        </div>
+
+        <div id="contact-page" class="page-section">
+            <h2>اتصل بنا</h2>
+            <form id="contact-form" onsubmit="sendFormspreeMsg(event)">
+                <div class="form-group">
+                    <label>الاسم الكامل</label>
+                    <input type="text" name="name" required placeholder="أدخل اسمك">
+                </div>
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" name="email" required placeholder="example@mail.com">
+                </div>
+                <div class="form-group">
+                    <label>الرسالة</label>
+                    <textarea name="message" rows="4" required placeholder="اكتب رسالتك هنا..."></textarea>
+                </div>
+                <button type="submit" id="submit-msg-btn" class="submit-btn">إرسال الرسالة</button>
+            </form>
+            <div id="form-response" style="display:none; margin-top:15px; padding:12px; background:#dcfce7; color:#166534; border-radius:8px; text-align:center; font-weight:bold;">
+                شكراً لك! تم إرسال رسالتك بنجاح وسنتواصل معك قريباً.
+            </div>
+            <span class="back-btn" onclick="showPage('home')">← العودة للرئيسية</span>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <a onclick="showPage('about')">من نحن</a> | 
+            <a onclick="showPage('privacy')">سياسة الخصوصية</a> | 
+            <a onclick="showPage('contact')">اتصل بنا</a>
+        </div>
+        <p>© 2026 جميع الحقوق محفوظة لمكتبة المتاح</p>
+    </footer>
+
+    <script>
+        window.booksData = {};
+
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = () => resolve(true);
+                script.onerror = () => reject(false);
+                document.body.appendChild(script);
+            });
+        }
+
+        // فحص تصاعدي بلا سقف محدد مسبقاً، يستمر حتى ينتهي التسلسل بالكامل
+        async function loadAllBookData() {
+            let i = 1;
+            let consecutiveFailures = 0;
+
+            while (true) {
+                try {
+                    const loaded = await loadScript(`books${i}.js`);
+                    if (loaded) {
+                        consecutiveFailures = 0; // إعادة ضبط العداد إذا وُجد الملف
+                    } else {
+                        consecutiveFailures++;
+                    }
+                } catch (e) {
+                    consecutiveFailures++;
+                }
+
+                // إذا فشل في العثور على 3 ملفات متتالية، نعتبر أننا وصلنا لنهاية الكتب
+                if (consecutiveFailures >= 3 && i > 10) {
+                    break;
+                }
+                
+                // حماية إضافية ضد أي حلقات لا نهائية غير متوقعة
+                if (i > 100000) {
+                    break;
+                }
+
+                i++;
+            }
+            renderAllBooks();
+        }
+
+        async function sendFormspreeMsg(event) {
+            event.preventDefault();
+            const btn = document.getElementById('submit-msg-btn');
+            const responseDiv = document.getElementById('form-response');
+            btn.disabled = true;
+            btn.innerText = 'جاري الإرسال...';
+            responseDiv.style.display = 'none';
+            const data = new FormData(event.target);
+            try {
+                const res = await fetch('https://formspree.io/f/mbgjqeww', {
+                    method: 'POST',
+                    body: data,
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (res.ok) {
+                    responseDiv.style.display = 'block';
+                    event.target.reset();
+                } else {
+                    alert('حدث خطأ أثناء الإرسال، يرجى المحاولة لاحقاً.');
+                }
+            } catch (err) {
+                alert('يرجى التأكد من اتصالك بالإنترنت.');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'إرسال الرسالة';
+            }
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId + '-page').classList.add('active');
+            const searchBox = document.getElementById('search-container');
+            if (pageId === 'home') {
+                searchBox.style.display = 'block';
+                renderAllBooks();
+            } else {
+                searchBox.style.display = 'none';
+            }
+            window.scrollTo(0, 0);
+        }
+
+        const activeDownloads = new Map();
+
+        async function handleDownload(event, pdfUrl, bookId, bookTitle, cardElement) {
+            event.preventDefault();
+            
+            const btnContainer = cardElement.querySelector('.download-action-container');
+            if (activeDownloads.has(bookId)) return;
+
+            const controller = new AbortController();
+            activeDownloads.set(bookId, controller);
+
+            btnContainer.innerHTML = `
+                <div class="download-wrapper">
+                    <button class="download-btn" style="background-color: #059669; pointer-events: none;" id="status-btn-${bookId}">جاري التحميل... 0%</button>
+                    <button class="cancel-btn" onclick="cancelDownload(event, '${bookId}', '${pdfUrl}', '${escapeHtml(bookTitle)}')">إلغاء التحميل</button>
+                </div>
+            `;
+
+            const beforeUnloadHandler = (e) => {
+                e.preventDefault();
+                e.returnValue = 'التحميل جاري في الخلفية، هل أنت متأكد من مغادرة الصفحة؟';
+                return e.returnValue;
+            };
+            window.addEventListener('beforeunload', beforeUnloadHandler);
+
+            try {
+                const response = await fetch(pdfUrl, { signal: controller.signal });
+                if (!response.ok) throw new Error('فشل جلب الملف');
+                
+                const totalLength = response.headers.get('content-length');
+                const reader = response.body.getReader();
+                let chunks = [];
+                let receivedLength = 0;
+                
+                while(true) {
+                    const {done, value} = await reader.read();
+                    if (done) break;
+                    
+                    chunks.push(value);
+                    receivedLength += value.length;
+                    
+                    const statusBtn = document.getElementById(`status-btn-${bookId}`);
+                    if (statusBtn) {
+                        if (totalLength) {
+                            let percent = Math.round((receivedLength / totalLength) * 100);
+                            statusBtn.innerHTML = `جاري التحميل... ${percent}%`;
+                        } else {
+                            statusBtn.innerHTML = `جاري التحميل... (${Math.round(receivedLength / 1024)} KB)`;
+                        }
+                    }
+                }
+                
+                window.removeEventListener('beforeunload', beforeUnloadHandler);
+                activeDownloads.delete(bookId);
+
+                let blob = new Blob(chunks);
+                let blobUrl = window.URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = (bookTitle ? bookTitle : 'book') + '.pdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(blobUrl);
+
+                const statusBtn = document.getElementById(`status-btn-${bookId}`);
+                if (statusBtn) {
+                    statusBtn.innerHTML = 'تم التحميل بنجاح!';
+                    statusBtn.style.backgroundColor = '#059669';
+                }
+                
+                setTimeout(() => {
+                    resetDownloadButton(cardElement, pdfUrl, bookId, bookTitle);
+                }, 2000);
+
+            } catch (err) {
+                window.removeEventListener('beforeunload', beforeUnloadHandler);
+                activeDownloads.delete(bookId);
+
+                if (err.name === 'AbortError') {
+                    const statusBtn = document.getElementById(`status-btn-${bookId}`);
+                    if (statusBtn) {
+                        statusBtn.innerHTML = 'تم إلغاء التحميل';
+                        statusBtn.style.backgroundColor = '#ef4444';
+                    }
+                    setTimeout(() => {
+                        resetDownloadButton(cardElement, pdfUrl, bookId, bookTitle);
+                    }, 1500);
+                } else {
+                    resetDownloadButton(cardElement, pdfUrl, bookId, bookTitle);
+                }
+            }
+        }
+
+        function cancelDownload(event, bookId, pdfUrl, bookTitle) {
+            event.preventDefault();
+            if (activeDownloads.has(bookId)) {
+                activeDownloads.get(bookId).abort();
+                activeDownloads.delete(bookId);
+            }
+        }
+
+        function resetDownloadButton(cardElement, pdfUrl, bookId, bookTitle) {
+            const btnContainer = cardElement.querySelector('.download-action-container');
+            if (btnContainer) {
+                btnContainer.innerHTML = `
+                    <a href="#" onclick="handleDownload(event, '${pdfUrl}', '${bookId}', '${escapeHtml(bookTitle)}', this.closest('.book-card'))" class="download-btn">
+                        تحميل / قراءة PDF 📥
+                    </a>
+                `;
+            }
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/'/g, "\\'");
+        }
+
+        function normalizeText(text) {
+            if (!text) return "";
+            return text
+                .toLowerCase()
+                .replace(/أ|إ|آ/g, "ا")
+                .replace(/ة/g, "ه")
+                .replace(/ى/g, "ي")
+                .replace(/[\u064b-\u0652]/g, "");
+        }
+
+        function renderAllBooks(filterQuery = "") {
+            const container = document.getElementById('books-container');
+            container.innerHTML = '';
+
+            const namesList = window.booksData || {};
+            const keys = Object.keys(namesList).map(Number).sort((a, b) => a - b);
+
+            let found = false;
+            const normalizedQuery = normalizeText(filterQuery);
+
+            for (let i of keys) {
+                const bookInfo = namesList[i];
+                if (!bookInfo) continue;
+
+                const title = bookInfo.title;
+                const categoryText = bookInfo.category;
+                const descText = bookInfo.desc;
+                const pdfPath = `book${i}.pdf`;
+                const coverPath = `cover${i}.jpg`;
+                const bookId = `book_${i}`;
+
+                if (normalizedQuery) {
+                    const normTitle = normalizeText(title);
+                    const normCat = normalizeText(categoryText);
+                    
+                    const matchTitle = normTitle.includes(normalizedQuery);
+                    const matchCat = normCat.includes(normalizedQuery);
+                    
+                    if (!matchTitle && !matchCat) continue;
+                }
+
+                found = true;
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.innerHTML = `
+                    <div>
+                        <img src="${coverPath}" alt="${title}" class="book-cover" onerror="this.parentElement.parentElement.style.display='none'">
+                        <span class="book-category">${categoryText}</span>
+                        <div class="book-title">${title}</div>
+                        <div class="book-desc">${descText}</div>
+                    </div>
+                    <div class="download-action-container">
+                        <a href="#" onclick="handleDownload(event, '${pdfPath}', '${bookId}', '${escapeHtml(title)}', this.closest('.book-card'))" class="download-btn">
+                            تحميل / قراءة PDF 📥
+                        </a>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+
+            if (!found && filterQuery) {
+                container.innerHTML = '<p style="text-align:center; grid-column: 1/-1; color:#888;">لم يتم العثور على أي كتاب مطابق لبحثك.</p>';
+            }
+        }
+
+        function filterBooks() {
+            const query = document.getElementById('search-input').value.trim();
+            renderAllBooks(query);
+        }
+
+        window.onload = () => {
+            loadAllBookData();
+        };
+    </script>
+</body>
+</html>
